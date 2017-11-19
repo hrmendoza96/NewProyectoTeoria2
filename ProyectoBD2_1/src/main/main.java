@@ -1,10 +1,15 @@
 package main;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.Mongo;
 import com.sun.glass.events.KeyEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -35,32 +40,9 @@ public class main extends javax.swing.JFrame {
         //Cargar componentes externos del Jframe
         //this.setLocationRelativeTo(null);
         this.setIconImage(ImageIO.read(new File("./src/Pics/iconframe.png")));
-
-        /**
-         * Cargar los Equipos en el arraylist de <equipo>
-         */
-        File file = null;
-        BufferedReader br = null;
-        FileReader fr = null;
-
-        try {
-            file = new File("./src/Data/Equipos.txt");
-            fr = new FileReader(file);
-            br = new BufferedReader(fr);
-
-            String nombre = "";
-
-            while ((nombre = br.readLine()) != null) {
-                Equipo eq = new Equipo(nombre);
-                equipos.add(eq);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            br.close();
-            fr.close();
-        }
-
+        ConectarBaseDeDatos(); //Se conecta a la base de datos
+        CargarEquipos();//se llenan los equipos en el arrayist equipos
+        //LlenarTablaEquipos(); //se inserta en la base de datos los equipos
         initComponents();
     }
 
@@ -2841,6 +2823,10 @@ public class main extends javax.swing.JFrame {
 
                 Jugador jug = new Jugador(nombre, peso, date, edad);
                 jug.setTipoJugador(tipo);
+                
+                //LlenarTablaJugador(jug);
+                
+                
 
                 if (contador == 11) {
                     contador = -5;
@@ -2869,6 +2855,8 @@ public class main extends javax.swing.JFrame {
                 partes = linea.split(";");
 
                 Entrenador e = new Entrenador(partes[0], Double.parseDouble(partes[1]));
+                
+                //LlenarTablaEntrenador(e);
 
                 Equipo eq = equipos.get(i);
                 e.setEquipo(eq);
@@ -2945,6 +2933,8 @@ public class main extends javax.swing.JFrame {
                 peso = Double.parseDouble(partes[2]);
 
                 Arbitro arb = new Arbitro(tipo, nombre, peso);
+                
+                //LlenarTablaArbitro(arb);
 
                 arb.setPartido(par);
 
@@ -3062,6 +3052,37 @@ public class main extends javax.swing.JFrame {
             this.JDialog_Participacion.setVisible(false);
         }//Fin del if else
     }//Fin del metodo
+    
+    public void CargarEquipos() throws IOException{
+        /**
+         * Cargar los Equipos en el arraylist de <equipo>
+         */
+        File file = null;
+        BufferedReader br = null;
+        FileReader fr = null;
+
+        try {
+            file = new File("./src/Data/Equipos.txt");
+            fr = new FileReader(file);
+            br = new BufferedReader(fr);
+
+            String nombre = "";
+
+            while ((nombre = br.readLine()) != null) {
+                Equipo eq = new Equipo(nombre);
+                
+                equipos.add(eq);
+            }
+            
+            
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            br.close();
+            fr.close();
+        }
+    }
 
     public static void main(String args[]) {
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
@@ -3289,4 +3310,66 @@ public class main extends javax.swing.JFrame {
 
     int PosicionEquipo = 0;
     int PosicionJugador = 0;
+    
+    
+    //==================================================SECCION BASE DE DATOS====================================================
+    /**
+     * Tablas de la base de datos
+     */
+    DB DataBase; //Base de datos del proyecto
+    DBCollection TJugadores;
+    DBCollection TEntrenadores;
+    DBCollection TArbitros;
+    DBCollection TEquipos;
+    
+    public void ConectarBaseDeDatos(){
+        try {
+            Mongo mongo = new Mongo ("localhost",27017);
+            DataBase = mongo.getDB("BaseProyecto");
+            TJugadores = DataBase.getCollection("Jugadores");
+            TEntrenadores = DataBase.getCollection("Entrenadores");
+            TArbitros = DataBase.getCollection("Arbitros");
+            TEquipos = DataBase.getCollection("Equipos");
+        } catch (UnknownHostException ex) {
+            Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public void LlenarTablaEquipos(){
+        BasicDBObject document;
+        for (Equipo equipo : equipos) {
+             document = new BasicDBObject();
+             document.put("Equipo", "'"+equipo.getNombreEquipo()+"'");
+             TEquipos.insert(document);
+        }
+    }
+    
+    public void LlenarTablaJugador(Jugador jugador){
+        BasicDBObject document = new BasicDBObject();
+        document.put("Nombre", jugador.getNombreJugador());
+        document.put("Edad", jugador.getEdad());
+        document.put("FechaNac", jugador.getFechaNac());
+        document.put("Peso", jugador.getNombreJugador());
+        document.put("Tipo", jugador.getTipoJugador());
+        TJugadores.insert(document);
+    }
+    
+    public void LlenarTablaEntrenador(Entrenador entrenador){
+        BasicDBObject document = new BasicDBObject();
+        document.put("Nombre", entrenador.getNombreEntrenador());
+        document.put("Peso", entrenador.getPesoEntrenador());
+        TEntrenadores.insert(document);
+    }
+    
+    public void LlenarTablaArbitro(Arbitro arbitro){
+        BasicDBObject document = new BasicDBObject();
+        document.put("Nombre", arbitro.getNombreArbitro());
+        document.put("Peso", arbitro.getPesoArbitro());
+        document.put("Tipo", arbitro.getTipo());
+        TArbitros.insert(document);
+    }
+    
+    
+    
+    
 }//Fin de la clase
