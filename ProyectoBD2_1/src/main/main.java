@@ -2449,19 +2449,22 @@ public class main extends javax.swing.JFrame {
 
                 //usar ID envez del nombre cuando se ponga mongo 
                 String IDNombre = String.valueOf(tb_ModificarArbitros.getValueAt(row, column));
-
-                for (Partido p : torneo.getJornadas().get(0).getPartidos()) {
-                    for (Arbitro a : p.getArbitros()) {
-                        if (IDNombre.equals(a.getNombreArbitro())) {
-                            Arbitro aviejo = a;
-
-                            a.setNombreArbitro(nombre);
-                            a.setPesoArbitro(peso);
-                            ModificarArbitroDBS(aviejo, a);
-                            break;
-                        }
-                    }//Fin del for
-                }//Fin del for
+                System.out.println("IDNombre:" + IDNombre);
+                for (Arbitro arbitro : arbitros) {
+                    if (IDNombre.equals(arbitro.getNombreArbitro())) {
+                        Arbitro aviejo= new Arbitro();
+                        aviejo.setNombreArbitro(arbitro.getNombreArbitro());
+                        aviejo.setPesoArbitro(arbitro.getPesoArbitro());
+                        aviejo.setTipo(arbitro.getTipo());
+                        
+                        
+                        arbitro.setNombreArbitro(nombre);
+                        arbitro.setPesoArbitro(peso);
+                        System.out.println("AViejo:"+aviejo.getNombreArbitro());
+                        ModificarArbitroDBS(aviejo, arbitro);
+                        break;
+                    }
+                }
                 ActualizarTablasArbitro();
                 JOptionPane.showMessageDialog(this, "Se ha actualizado la infomación del arbitro exitosamente.");
             }
@@ -2475,7 +2478,6 @@ public class main extends javax.swing.JFrame {
         if (torneo == null) {
             JOptionPane.showMessageDialog(null, "No existe ningún torneo.", "¡Error!", JOptionPane.ERROR_MESSAGE);
         } else {
-
             ActualizarTablasEntrenadores();
             this.ModificarEntrenador_Dia.pack();
             this.ModificarEntrenador_Dia.setVisible(true);
@@ -3463,19 +3465,27 @@ public class main extends javax.swing.JFrame {
     public void ModificarArbitroDBS(Arbitro arb, Arbitro newArb) {
         BasicDBObject document = new BasicDBObject();
         BasicDBObject newDocument = new BasicDBObject();
+        BasicDBObject DocAuxiliar = new BasicDBObject();
         document.put("Nombre", arb.getNombreArbitro());
         document.put("Peso", arb.getPesoArbitro());
         document.put("Tipo", arb.getTipo());
         DBCursor cursor = TArbitros.find();
         //System.out.println(newArb.getNombreArbitro());
-        while(cursor.hasNext()){
-            document = (BasicDBObject) cursor.next();
+        while (cursor.hasNext()) {
+            
+            DocAuxiliar = (BasicDBObject) cursor.next();
+            System.out.println("DocAuxiliar Nombre:"+DocAuxiliar.getString("Nombre"));
+            System.out.println("document: "+document.getString("Nombre"));
+            if (DocAuxiliar.getString("Nombre").equals(document.getString("Nombre"))) {
+                System.out.println("entra");
+                newDocument.put("Nombre", newArb.getNombreArbitro());
+                newDocument.put("Peso", newArb.getPesoArbitro());
+                newDocument.put("Tipo", newArb.getTipo());
+                TArbitros.update(DocAuxiliar, newDocument);
+                System.out.println("se pudo modificar arbitro");
+            }
         }
-        newDocument.put("Nombre", newArb.getNombreArbitro());
-        newDocument.put("Peso", newArb.getPesoArbitro());
-        newDocument.put("Tipo", newArb.getTipo());
-        TArbitros.update((DBObject)arb, (DBObject)newArb);
-        System.out.println("se pudo modificar arbitro");
+
     }
 
 }//Fin de la clase
