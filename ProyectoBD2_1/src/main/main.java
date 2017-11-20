@@ -34,6 +34,7 @@ import static jdk.nashorn.internal.runtime.Debug.id;
 public class main extends javax.swing.JFrame {
 
     ArrayList<Equipo> equipos = new ArrayList(); //ArrayList de equipos
+    ArrayList<Arbitro> arbitros = new ArrayList();
     boolean siReviso = false;
     DateFormat dateformat = new SimpleDateFormat("MM/dd/yyyy");
     DecimalFormat df = new DecimalFormat("#.00"); //Formato de los decimales que se utilizara mas adelante con el manejo de los pesos
@@ -2051,10 +2052,10 @@ public class main extends javax.swing.JFrame {
         }//Fin del if
     }//GEN-LAST:event_btn_BorrarTorneoActionPerformed
     private void btn_CrearTorneoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_CrearTorneoActionPerformed
-        
+
         DBSCargarJugadores_Entrenadores();
         //CrearEquipos();
-        
+        DBSCargarArbitros();
         CrearPartidos();
         //  RedondearPesos();
         JOptionPane.showMessageDialog(null, "¡El torneo se ha creado aleatoriamente!", "Torneo Creado", JOptionPane.INFORMATION_MESSAGE);
@@ -2452,8 +2453,11 @@ public class main extends javax.swing.JFrame {
                 for (Partido p : torneo.getJornadas().get(0).getPartidos()) {
                     for (Arbitro a : p.getArbitros()) {
                         if (IDNombre.equals(a.getNombreArbitro())) {
+                            Arbitro aviejo = a;
+
                             a.setNombreArbitro(nombre);
                             a.setPesoArbitro(peso);
+                            ModificarArbitroDBS(aviejo, a);
                             break;
                         }
                     }//Fin del for
@@ -2571,7 +2575,7 @@ public class main extends javax.swing.JFrame {
     }//GEN-LAST:event_chkb_NombreStateChanged
 
     private void chkb_FechaNacStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_chkb_FechaNacStateChanged
-        
+
         if (chkb_FechaNac.isSelected()) {
             dc_FechaNacimiento.setEnabled(true);
         } else {
@@ -2831,11 +2835,8 @@ public class main extends javax.swing.JFrame {
 
                 Jugador jug = new Jugador(nombre, peso, date, edad);
                 jug.setTipoJugador(tipo);
-                
-                //LlenarTablaJugador(jug);
-                
-                
 
+                //LlenarTablaJugador(jug);
                 if (contador == 11) {
                     contador = -5;
                 }
@@ -2863,9 +2864,8 @@ public class main extends javax.swing.JFrame {
                 partes = linea.split(";");
 
                 Entrenador e = new Entrenador(partes[0], Double.parseDouble(partes[1]));
-                
-                //LlenarTablaEntrenador(e);
 
+                //LlenarTablaEntrenador(e);
                 Equipo eq = equipos.get(i);
                 e.setEquipo(eq);
 
@@ -2913,6 +2913,7 @@ public class main extends javax.swing.JFrame {
 
     public Partido AgregarArbitros(Partido par, int contador) {
 
+        /*
         File file = null;
         BufferedReader br = null;
         FileReader fr = null;
@@ -2965,7 +2966,25 @@ public class main extends javax.swing.JFrame {
             } catch (Exception e) {
             }
         }
+         */
+        int contadorwhile = 0;
 
+        for (int i = contador; i < 60; i++) {
+
+            Arbitro arb = arbitros.get(i);
+
+            arb.setPartido(par);
+
+            par.addArbitro(arb);
+
+            if (contadorwhile == 3) {
+                break;
+            }
+
+            contadorwhile++;
+        }
+
+        //LlenarTablaArbitro(arb);
         return par;
 
     }//Fin del metodo
@@ -3060,8 +3079,8 @@ public class main extends javax.swing.JFrame {
             this.JDialog_Participacion.setVisible(false);
         }//Fin del if else
     }//Fin del metodo
-    
-    public void CargarEquipos() throws IOException{
+
+    public void CargarEquipos() throws IOException {
         /**
          * Cargar los Equipos en el arraylist de <equipo>
          */
@@ -3078,12 +3097,10 @@ public class main extends javax.swing.JFrame {
 
             while ((nombre = br.readLine()) != null) {
                 Equipo eq = new Equipo(nombre);
-                
+
                 equipos.add(eq);
             }
-            
-            
-            
+
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -3318,8 +3335,7 @@ public class main extends javax.swing.JFrame {
 
     int PosicionEquipo = 0;
     int PosicionJugador = 0;
-    
-    
+
     //==================================================SECCION BASE DE DATOS====================================================
     /**
      * Tablas de la base de datos
@@ -3329,10 +3345,10 @@ public class main extends javax.swing.JFrame {
     DBCollection TEntrenadores;
     DBCollection TArbitros;
     DBCollection TEquipos;
-    
-    public void ConectarBaseDeDatos(){
+
+    public void ConectarBaseDeDatos() {
         try {
-            Mongo mongo = new Mongo ("localhost",27017);
+            Mongo mongo = new Mongo("localhost", 27017);
             DataBase = mongo.getDB("BaseProyecto");
             TJugadores = DataBase.getCollection("Jugadores");
             TEntrenadores = DataBase.getCollection("Entrenadores");
@@ -3342,17 +3358,17 @@ public class main extends javax.swing.JFrame {
             Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
-    public void LlenarTablaEquipos(){
+
+    public void LlenarTablaEquipos() {
         BasicDBObject document;
         for (Equipo equipo : equipos) {
-             document = new BasicDBObject();
-             document.put("Equipo", "'"+equipo.getNombreEquipo()+"'");
-             TEquipos.insert(document);
+            document = new BasicDBObject();
+            document.put("Equipo", "'" + equipo.getNombreEquipo() + "'");
+            TEquipos.insert(document);
         }
     }
-    
-    public void LlenarTablaJugador(Jugador jugador){
+
+    public void LlenarTablaJugador(Jugador jugador) {
         BasicDBObject document = new BasicDBObject();
         document.put("Nombre", jugador.getNombreJugador());
         document.put("Edad", jugador.getEdad());
@@ -3361,45 +3377,45 @@ public class main extends javax.swing.JFrame {
         document.put("Tipo", jugador.getTipoJugador());
         TJugadores.insert(document);
     }
-    
-    public void LlenarTablaEntrenador(Entrenador entrenador){
+
+    public void LlenarTablaEntrenador(Entrenador entrenador) {
         BasicDBObject document = new BasicDBObject();
         document.put("Nombre", entrenador.getNombreEntrenador());
         document.put("Peso", entrenador.getPesoEntrenador());
         TEntrenadores.insert(document);
     }
-    
-    public void LlenarTablaArbitro(Arbitro arbitro){
+
+    public void LlenarTablaArbitro(Arbitro arbitro) {
         BasicDBObject document = new BasicDBObject();
         document.put("Nombre", arbitro.getNombreArbitro());
         document.put("Peso", arbitro.getPesoArbitro());
         document.put("Tipo", arbitro.getTipo());
         TArbitros.insert(document);
     }
-    
-    public void DBSCargarEquipos(){
+
+    public void DBSCargarEquipos() {
         BasicDBObject document = new BasicDBObject();
         DBCursor cursor = TEquipos.find();
 
-        while (cursor.hasNext()){
+        while (cursor.hasNext()) {
             document = (BasicDBObject) cursor.next(); // Itera cada objeto dentro de la tabla y lo asigna a un objeto BasicDBObject
             Equipo eq = new Equipo(document.getString("Equipo")); //lee el objecto y accede solamente el atributo equipo
             equipos.add(eq);
             //System.out.println(equipos.get(equipos.size()-1).getNombreEquipo());
-            
+
         }
-        
+
     }
-    
-    public void DBSCargarJugadores_Entrenadores(){
+
+    public void DBSCargarJugadores_Entrenadores() {
         BasicDBObject document = new BasicDBObject();
         DBCursor cursor = TJugadores.find();
         double pesoEquipo = 0.0;
         int contador = 0;
         int PosicionEquipo = -1;
-        while (cursor.hasNext()){
+        while (cursor.hasNext()) {
             document = (BasicDBObject) cursor.next();
-            Jugador jug = new Jugador(document.getString("Nombre"), document.getDouble("Peso"), document.getDate("FechaNac") , document.getInt("Edad"));
+            Jugador jug = new Jugador(document.getString("Nombre"), document.getDouble("Peso"), document.getDate("FechaNac"), document.getInt("Edad"));
             jug.setTipoJugador(document.getString("Tipo"));
             if (contador == 11) {
                 contador = -5;
@@ -3413,30 +3429,53 @@ public class main extends javax.swing.JFrame {
             equipos.get(PosicionEquipo).addJugador(jug);
             contador++;
         }
-        
+
         BasicDBObject documentEntrenadores = new BasicDBObject();
         DBCursor cursorEnt = TEntrenadores.find();
 
-        int i=0;
-        while (cursorEnt.hasNext()){
+        int i = 0;
+        while (cursorEnt.hasNext()) {
             documentEntrenadores = (BasicDBObject) cursorEnt.next(); // Itera cada objeto dentro de la tabla y lo asigna a un objeto BasicDBObject
             Entrenador e = new Entrenador(documentEntrenadores.getString("Nombre"), documentEntrenadores.getDouble("Peso"));
             Equipo eq = equipos.get(i);
             e.setEquipo(eq);
             eq.setTrainer(e);
             eq.setPeso(eq.getPeso() + e.getPesoEntrenador());
-            
+
             i++;
         }
         System.out.println("Se hizo");
     }
-    
-    public void DBSCargarArbitros(){
-        
+
+    public void DBSCargarArbitros() {
+
+        BasicDBObject document = new BasicDBObject();
+        DBCursor cursor = TArbitros.find();
+
+        while (cursor.hasNext()) {
+            document = (BasicDBObject) cursor.next(); // Itera cada objeto dentro de la tabla y lo asigna a un objeto BasicDBObject
+            Arbitro arb = new Arbitro(document.getString("Tipo"), document.getString("Nombre"), document.getDouble("Peso"));
+            arbitros.add(arb);
+        }
+
     }
-    
-    
-    
-    
-    
+
+    public void ModificarArbitroDBS(Arbitro arb, Arbitro newArb) {
+        BasicDBObject document = new BasicDBObject();
+        BasicDBObject newDocument = new BasicDBObject();
+        document.put("Nombre", arb.getNombreArbitro());
+        document.put("Peso", arb.getPesoArbitro());
+        document.put("Tipo", arb.getTipo());
+        DBCursor cursor = TArbitros.find();
+        //System.out.println(newArb.getNombreArbitro());
+        while(cursor.hasNext()){
+            document = (BasicDBObject) cursor.next();
+        }
+        newDocument.put("Nombre", newArb.getNombreArbitro());
+        newDocument.put("Peso", newArb.getPesoArbitro());
+        newDocument.put("Tipo", newArb.getTipo());
+        TArbitros.update((DBObject)arb, (DBObject)newArb);
+        System.out.println("se pudo modificar arbitro");
+    }
+
 }//Fin de la clase
