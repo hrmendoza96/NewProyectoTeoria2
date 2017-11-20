@@ -2051,7 +2051,10 @@ public class main extends javax.swing.JFrame {
         }//Fin del if
     }//GEN-LAST:event_btn_BorrarTorneoActionPerformed
     private void btn_CrearTorneoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_CrearTorneoActionPerformed
-        CrearEquipos();
+        
+        DBSCargarJugadores_Entrenadores();
+        //CrearEquipos();
+        
         CrearPartidos();
         //  RedondearPesos();
         JOptionPane.showMessageDialog(null, "¡El torneo se ha creado aleatoriamente!", "Torneo Creado", JOptionPane.INFORMATION_MESSAGE);
@@ -3354,7 +3357,7 @@ public class main extends javax.swing.JFrame {
         document.put("Nombre", jugador.getNombreJugador());
         document.put("Edad", jugador.getEdad());
         document.put("FechaNac", jugador.getFechaNac());
-        document.put("Peso", jugador.getNombreJugador());
+        document.put("Peso", jugador.getPesoJugador());
         document.put("Tipo", jugador.getTipoJugador());
         TJugadores.insert(document);
     }
@@ -3388,12 +3391,46 @@ public class main extends javax.swing.JFrame {
         
     }
     
-    public void DBSCargarJugadores(){
+    public void DBSCargarJugadores_Entrenadores(){
+        BasicDBObject document = new BasicDBObject();
+        DBCursor cursor = TJugadores.find();
+        double pesoEquipo = 0.0;
+        int contador = 0;
+        int PosicionEquipo = -1;
+        while (cursor.hasNext()){
+            document = (BasicDBObject) cursor.next();
+            Jugador jug = new Jugador(document.getString("Nombre"), document.getDouble("Peso"), document.getDate("FechaNac") , document.getInt("Edad"));
+            jug.setTipoJugador(document.getString("Tipo"));
+            if (contador == 11) {
+                contador = -5;
+            }
+            if (contador == 0) {
+                PosicionEquipo++;
+            }
+            pesoEquipo = equipos.get(PosicionEquipo).getPeso() + document.getDouble("Peso");
+            jug.setEq(equipos.get(PosicionEquipo));
+            equipos.get(PosicionEquipo).setPeso(pesoEquipo);
+            equipos.get(PosicionEquipo).addJugador(jug);
+            contador++;
+        }
         
+        BasicDBObject documentEntrenadores = new BasicDBObject();
+        DBCursor cursorEnt = TEntrenadores.find();
+
+        int i=0;
+        while (cursorEnt.hasNext()){
+            documentEntrenadores = (BasicDBObject) cursorEnt.next(); // Itera cada objeto dentro de la tabla y lo asigna a un objeto BasicDBObject
+            Entrenador e = new Entrenador(documentEntrenadores.getString("Nombre"), documentEntrenadores.getDouble("Peso"));
+            Equipo eq = equipos.get(i);
+            e.setEquipo(eq);
+            eq.setTrainer(e);
+            eq.setPeso(eq.getPeso() + e.getPesoEntrenador());
+            
+            i++;
+        }
+        System.out.println("Se hizo");
     }
-    public void DBSCargarEntrenadores(){
-        
-    }
+    
     public void DBSCargarArbitros(){
         
     }
