@@ -3,6 +3,8 @@ package main;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import com.sun.glass.events.KeyEvent;
 import java.io.BufferedReader;
@@ -26,6 +28,8 @@ import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
+import javax.swing.text.Document;
+import static jdk.nashorn.internal.runtime.Debug.id;
 
 public class main extends javax.swing.JFrame {
 
@@ -41,7 +45,8 @@ public class main extends javax.swing.JFrame {
         //this.setLocationRelativeTo(null);
         this.setIconImage(ImageIO.read(new File("./src/Pics/iconframe.png")));
         ConectarBaseDeDatos(); //Se conecta a la base de datos
-        CargarEquipos();//se llenan los equipos en el arrayist equipos
+        //CargarEquipos();//se llenan los equipos en el arrayist equipos
+        DBSCargarEquipos(); //cargar los equipos desde la base de datos
         //LlenarTablaEquipos(); //se inserta en la base de datos los equipos
         initComponents();
     }
@@ -3368,6 +3373,31 @@ public class main extends javax.swing.JFrame {
         document.put("Tipo", arbitro.getTipo());
         TArbitros.insert(document);
     }
+    
+    public void DBSCargarEquipos(){
+        BasicDBObject document = new BasicDBObject();
+        DBCursor cursor = TEquipos.find();
+
+        while (cursor.hasNext()){
+            document = (BasicDBObject) cursor.next(); // Itera cada objeto dentro de la tabla y lo asigna a un objeto BasicDBObject
+            Equipo eq = new Equipo(document.getString("Equipo")); //lee el objecto y accede solamente el atributo equipo
+            equipos.add(eq);
+            //System.out.println(equipos.get(equipos.size()-1).getNombreEquipo());
+            
+        }
+        
+    }
+    
+    public void DBSCargarJugadores(){
+        
+    }
+    public void DBSCargarEntrenadores(){
+        
+    }
+    public void DBSCargarArbitros(){
+        
+    }
+    
     
     
     
