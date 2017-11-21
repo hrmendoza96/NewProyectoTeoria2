@@ -235,9 +235,6 @@ public class main extends javax.swing.JFrame {
         cb_EquipoJugador = new javax.swing.JComboBox<>();
         btn_ModificarJugadorDia = new javax.swing.JButton();
         btn_SalirModificacionJugador = new javax.swing.JButton();
-        jLabel41 = new javax.swing.JLabel();
-        btn_BuscarJugador = new javax.swing.JButton();
-        tf_IDJugador = new javax.swing.JTextField();
         dc_FechaNacimiento = new com.toedter.calendar.JDateChooser();
         buttonGroup1 = new javax.swing.ButtonGroup();
         btn_admin = new javax.swing.JButton();
@@ -1868,15 +1865,6 @@ public class main extends javax.swing.JFrame {
             }
         });
 
-        jLabel41.setText("ID Jugador:");
-
-        btn_BuscarJugador.setText("Buscar");
-        btn_BuscarJugador.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                btn_BuscarJugadorMouseClicked(evt);
-            }
-        });
-
         javax.swing.GroupLayout ModificarJugador_DiaLayout = new javax.swing.GroupLayout(ModificarJugador_Dia.getContentPane());
         ModificarJugador_Dia.getContentPane().setLayout(ModificarJugador_DiaLayout);
         ModificarJugador_DiaLayout.setHorizontalGroup(
@@ -1919,13 +1907,7 @@ public class main extends javax.swing.JFrame {
                                         .addGroup(ModificarJugador_DiaLayout.createSequentialGroup()
                                             .addGap(7, 7, 7)
                                             .addComponent(dc_FechaNacimiento, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                                .addComponent(jScrollPane13, javax.swing.GroupLayout.PREFERRED_SIZE, 632, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGroup(ModificarJugador_DiaLayout.createSequentialGroup()
-                                    .addComponent(jLabel41)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(tf_IDJugador, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(48, 48, 48)
-                                    .addComponent(btn_BuscarJugador))))))
+                                .addComponent(jScrollPane13, javax.swing.GroupLayout.PREFERRED_SIZE, 632, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                 .addContainerGap(57, Short.MAX_VALUE))
         );
         ModificarJugador_DiaLayout.setVerticalGroup(
@@ -1935,13 +1917,8 @@ public class main extends javax.swing.JFrame {
                 .addComponent(jLabel40)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSeparator16, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(42, 42, 42)
-                .addGroup(ModificarJugador_DiaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel41)
-                    .addComponent(btn_BuscarJugador)
-                    .addComponent(tf_IDJugador, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(38, 38, 38)
-                .addComponent(jScrollPane13, javax.swing.GroupLayout.PREFERRED_SIZE, 82, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jScrollPane13, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(30, 30, 30)
                 .addGroup(ModificarJugador_DiaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(chkb_Nombre, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2382,6 +2359,21 @@ public class main extends javax.swing.JFrame {
         }//Fin del for
     }
 
+    public void ActualizarTablasJugadores() { //para la parte de modificar jugadores
+        ((DefaultTableModel) tb_ModificarJugador.getModel()).setRowCount(0);
+        for (Equipo equipo : equipos) {
+            for (Jugador jugador : equipo.getJugadores()) {
+                DefaultTableModel model = ((DefaultTableModel) tb_ModificarJugador.getModel());
+                Object[] row = {jugador.getNombreJugador(), jugador.getEdad(), jugador.getFechaNac(), jugador.getTipoJugador(), jugador.getPesoJugador(), jugador.getEq().getNombreEquipo()};
+                model.addRow(row);
+            }
+
+        }//Fin del for
+        for (Equipo equipo : equipos) {
+                cb_EquipoJugador.addItem(equipo.getNombreEquipo());
+            }//Fin del for
+    }
+
     public void ActualizarTablasEntrenadores() { //para la parte de modificar entrenadores
         ((DefaultTableModel) tb_ModificarEntrenadores.getModel()).setRowCount(0);
         for (Equipo equipo : equipos) {
@@ -2452,15 +2444,14 @@ public class main extends javax.swing.JFrame {
                 System.out.println("IDNombre:" + IDNombre);
                 for (Arbitro arbitro : arbitros) {
                     if (IDNombre.equals(arbitro.getNombreArbitro())) {
-                        Arbitro aviejo= new Arbitro();
+                        Arbitro aviejo = new Arbitro();
                         aviejo.setNombreArbitro(arbitro.getNombreArbitro());
                         aviejo.setPesoArbitro(arbitro.getPesoArbitro());
                         aviejo.setTipo(arbitro.getTipo());
-                        
-                        
+
                         arbitro.setNombreArbitro(nombre);
                         arbitro.setPesoArbitro(peso);
-                        System.out.println("AViejo:"+aviejo.getNombreArbitro());
+                        System.out.println("AViejo:" + aviejo.getNombreArbitro());
                         ModificarArbitroDBS(aviejo, arbitro);
                         break;
                     }
@@ -2521,10 +2512,15 @@ public class main extends javax.swing.JFrame {
 
                 for (Equipo equipo : equipos) {
                     if (equipo.getTrainer().getNombreEntrenador().equals(IDNombre)) {
+                        Entrenador EntViejo = new Entrenador();
+                        EntViejo.setNombreEntrenador(equipo.getTrainer().getNombreEntrenador());
+                        EntViejo.setPesoEntrenador(equipo.getTrainer().getPesoEntrenador());
+                        EntViejo.setEquipo(equipo);
                         equipo.getTrainer().setNombreEntrenador(nombre);
                         equipo.getTrainer().setPesoEntrenador(peso);
                         PesoNew = ActualizarPesoEquipo(equipo);
                         equipo.setPeso(PesoNew);
+                        ModificarEntrenadorDBS(EntViejo, equipo.getTrainer());
                         break;
                     }
                 }
@@ -2550,10 +2546,7 @@ public class main extends javax.swing.JFrame {
         if (torneo == null) {
             JOptionPane.showMessageDialog(null, "No existe ningún torneo.", "¡Error!", JOptionPane.ERROR_MESSAGE);
         } else {
-            ((DefaultTableModel) tb_ModificarJugador.getModel()).setRowCount(0);
-            for (Equipo equipo : equipos) {
-                cb_EquipoJugador.addItem(equipo.getNombreEquipo());
-            }//Fin del for
+            ActualizarTablasJugadores();
             this.ModificarJugador_Dia.pack();
             this.ModificarJugador_Dia.setVisible(true);
 
@@ -2612,150 +2605,112 @@ public class main extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_chkb_EquipoStateChanged
 
-    private void btn_BuscarJugadorMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btn_BuscarJugadorMouseClicked
-        ((DefaultTableModel) tb_ModificarJugador.getModel()).setRowCount(0);
+    private void btn_ModificarJugadorDiaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btn_ModificarJugadorDiaMouseClicked
 
-        String IDJugador = tf_IDJugador.getText();
-
-        if (IDJugador.equals("")) {
-            JOptionPane.showMessageDialog(this, "El nombre no puede estar vacio.");
+        
+        int row = tb_ModificarJugador.getSelectedRow();
+        int column = tb_ModificarJugador.getSelectedColumn();
+        if (row == -1 || column == -1) {
+            JOptionPane.showMessageDialog(this, "Tiene que seleccionar algo primero.");
         } else {
 
-            for (int i = 0; i < equipos.size(); i++) {
-                for (int j = 0; j < equipos.get(i).getJugadores().size(); j++) {
-                    if (IDJugador.equals(equipos.get(i).getJugadores().get(j).getNombreJugador())) {
+            String IDNombre = String.valueOf(tb_ModificarJugador.getValueAt(row, column));
+            for (Equipo equipo : equipos) {
+                for (Jugador jug : equipo.getJugadores()) {
+                    if (IDNombre.equals(jug.getNombreJugador())) {
+                        Jugador jViejo = new Jugador();
+                        jViejo.setNombreJugador(jug.getNombreJugador());
+                        jViejo.setEdad(jug.getEdad());
+                        jViejo.setFechaNac(jug.getFechaNac());
+                        jViejo.setPesoJugador(jug.getPesoJugador());
+                        jViejo.setTipoJugador(jug.getTipoJugador());
+                        jViejo.setEq(jug.getEq());
+                        
+                        //boolean isSame = true;
+                        int PosicionEquipoNuevo = 0;
 
-                        PosicionEquipo = i;
-                        PosicionJugador = j;
+                        if (chkb_Nombre.isSelected()) {
+                            String nombre = tf_NombreJugador.getText();
+                            if (nombre.equals("")) {
+                                JOptionPane.showMessageDialog(this, "El nombre no puede estar vacio.");
 
-                        Jugador jug = equipos.get(PosicionEquipo).getJugadores().get(PosicionJugador);
+                            } else {
 
-                        DefaultTableModel model = ((DefaultTableModel) tb_ModificarJugador.getModel());
-                        Object[] row = {jug.getNombreJugador(), jug.getEdad(), dateformat.format(jug.getFechaNac()), jug.getTipoJugador(), jug.getPesoJugador(),
-                            jug.getEq().getNombreEquipo()};
-                        model.addRow(row);
+                                jug.setNombreJugador(nombre);
+                            }
+                        }
+                        if (chkb_FechaNac.isSelected()) {
+                            Date d = null;
+                            try {
+                                String date = dateformat.format(dc_FechaNacimiento.getDate()); //sin parsearlo a date
 
-                        j = equipos.get(i).getJugadores().size();
-                        i = equipos.size();
+                                d = dateformat.parse(date); //ya parseado a date
+                                jug.setFechaNac(d);
 
-                        IDJugador = "Done";
-                        siReviso = true;
+                                int edad = 2017 - (Integer.parseInt(date.split("/")[2]));
+                                jug.setEdad(edad);
 
+                            } catch (ParseException ex) {
+                                Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+                        if (chkb_Tipo.isSelected()) {
+                            if (rb_Titular.isSelected()) {
+                                jug.setTipoJugador("Titular");
+                            }
+                            if (rb_Reserva.isSelected()) {
+                                jug.setTipoJugador("Reserva");
+                            }
+                        }
+                        if (chkb_Peso.isSelected()) {
+                            jug.setPesoJugador(Double.parseDouble(String.valueOf(spin_PesoJugador.getValue())));
+                        }
+                        if (chkb_Equipo.isSelected()) {
+
+                            String eqelegido = String.valueOf(cb_EquipoJugador.getSelectedItem());
+                            if (jug.getEq().getNombreEquipo().equals(eqelegido)) { //si el equipo del jugador == equipo elegido nuevo
+                                siReviso = true;
+                                JOptionPane.showMessageDialog(ModificarJugador_Dia, "Ese es el mismo equipo del jugador.");
+                            } else {
+                                Equipo EqViejo = equipos.get(PosicionEquipo);
+
+                                EqViejo.getJugadores().remove(PosicionJugador); //borrar el jugador que ya cambio de equipo
+
+                                ActualizarPesoEquipo(EqViejo); //actualizar el peso del equipo viejo
+
+                                for (Jugador jugador : EqViejo.getJugadores()) { //cambiar una reserva a titular
+                                    if (jugador.getTipoJugador().equals("Reserva")) {
+                                        jugador.setTipoJugador("Titular");
+                                        break;
+                                    }
+                                }
+
+                                for (int i = 0; i < equipos.size(); i++) {
+                                    if (eqelegido.equals(equipos.get(i).getNombreEquipo())) {
+                                        PosicionEquipoNuevo = i;
+                                        i = equipos.size();
+                                    }
+                                }
+
+                                jug.setEq(equipos.get(PosicionEquipoNuevo));
+                                equipos.get(PosicionEquipoNuevo).addJugador(jug);
+                                ActualizarPesoEquipo(equipos.get(PosicionEquipoNuevo)); //actualizar peso del equipo nuevo
+
+                            }
+
+                        }
+                        ModificarJugadorDBS(jViejo, jug);
                         break;
                     }
                 }
             }
-
-            if (!IDJugador.equals("Done")) {
-                JOptionPane.showMessageDialog(ModificarJugador_Dia, "No se encontro un jugador con ese ID.");
-            }
+            ActualizarTablasJugadores();
+            JOptionPane.showMessageDialog(this.ModificarEntrenador_Dia, "Se ha actualizado la infomación del jugador exitosamente.");
         }
 
+        
 
-    }//GEN-LAST:event_btn_BuscarJugadorMouseClicked
-
-    private void btn_ModificarJugadorDiaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btn_ModificarJugadorDiaMouseClicked
-
-        if (siReviso) { //verifica si busco al jugador 
-
-            siReviso = false; //resetear valor
-
-            Jugador jug = equipos.get(PosicionEquipo).getJugadores().get(PosicionJugador);
-
-            boolean isSame = true;
-            int PosicionEquipoNuevo = 0;
-
-            if (chkb_Nombre.isSelected()) {
-                String nombre = tf_NombreJugador.getText();
-                if (nombre.equals("")) {
-                    JOptionPane.showMessageDialog(this, "El nombre no puede estar vacio.");
-                    siReviso = true;
-                    isSame = false;
-                } else {
-
-                    jug.setNombreJugador(nombre);
-                }
-            }
-            if (chkb_FechaNac.isSelected()) {
-                Date d = null;
-                try {
-                    String date = dateformat.format(dc_FechaNacimiento.getDate()); //sin parsearlo a date
-
-                    d = dateformat.parse(date); //ya parseado a date
-                    jug.setFechaNac(d);
-
-                    int edad = 2017 - (Integer.parseInt(date.split("/")[2]));
-                    jug.setEdad(edad);
-
-                } catch (ParseException ex) {
-                    Logger.getLogger(main.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-            if (chkb_Tipo.isSelected()) {
-                if (rb_Titular.isSelected()) {
-                    jug.setTipoJugador("Titular");
-                }
-                if (rb_Reserva.isSelected()) {
-                    jug.setTipoJugador("Reserva");
-                }
-            }
-            if (chkb_Peso.isSelected()) {
-                jug.setPesoJugador(Double.parseDouble(String.valueOf(spin_PesoJugador.getValue())));
-            }
-            if (chkb_Equipo.isSelected()) {
-
-                String eqelegido = String.valueOf(cb_EquipoJugador.getSelectedItem());
-                if (jug.getEq().getNombreEquipo().equals(eqelegido)) { //si el equipo del jugador == equipo elegido nuevo
-                    siReviso = true;
-                    JOptionPane.showMessageDialog(ModificarJugador_Dia, "Ese es el mismo equipo del jugador.");
-                } else {
-                    Equipo EqViejo = equipos.get(PosicionEquipo);
-
-                    EqViejo.getJugadores().remove(PosicionJugador); //borrar el jugador que ya cambio de equipo
-
-                    ActualizarPesoEquipo(EqViejo); //actualizar el peso del equipo viejo
-
-                    for (Jugador jugador : EqViejo.getJugadores()) { //cambiar una reserva a titular
-                        if (jugador.getTipoJugador().equals("Reserva")) {
-                            jugador.setTipoJugador("Titular");
-                            break;
-                        }
-                    }
-
-                    for (int i = 0; i < equipos.size(); i++) {
-                        if (eqelegido.equals(equipos.get(i).getNombreEquipo())) {
-                            PosicionEquipoNuevo = i;
-                            i = equipos.size();
-                        }
-                    }
-
-                    jug.setEq(equipos.get(PosicionEquipoNuevo));
-                    equipos.get(PosicionEquipoNuevo).addJugador(jug);
-                    ActualizarPesoEquipo(equipos.get(PosicionEquipoNuevo)); //actualizar peso del equipo nuevo
-                    isSame = false;
-                }
-
-            }
-
-            if (!isSame) {
-                ((DefaultTableModel) tb_ModificarJugador.getModel()).setRowCount(0);
-                DefaultTableModel model = ((DefaultTableModel) tb_ModificarJugador.getModel());
-                Object[] row = {jug.getNombreJugador(), jug.getEdad(), dateformat.format(jug.getFechaNac()), jug.getTipoJugador(), jug.getPesoJugador(),
-                    jug.getEq().getNombreEquipo()};
-                model.addRow(row);
-
-                JOptionPane.showMessageDialog(ModificarJugador_Dia, "El jugador se ha modificado exitosamente.");
-
-            }
-        } else {
-
-            JOptionPane.showMessageDialog(ModificarJugador_Dia, "Tiene que buscar a alguien primero.");
-        }
     }//GEN-LAST:event_btn_ModificarJugadorDiaMouseClicked
-
-    public void ActualizarTablasJugadores() { //para parte de modif jugador
-
-    }
 
     //Terminados
     public void MetodoComboBoxJornadaA() {
@@ -3175,7 +3130,6 @@ public class main extends javax.swing.JFrame {
     private javax.swing.JDialog VisualizarJornadas_Dia;
     private javax.swing.JDialog VisualizarTorneoMenu_Dia;
     private javax.swing.JButton btn_BorrarTorneo;
-    private javax.swing.JButton btn_BuscarJugador;
     private javax.swing.JButton btn_CrearTorneo;
     private javax.swing.JButton btn_JornadaA;
     private javax.swing.JButton btn_JornadaB;
@@ -3263,7 +3217,6 @@ public class main extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel39;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel40;
-    private javax.swing.JLabel jLabel41;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
@@ -3321,7 +3274,6 @@ public class main extends javax.swing.JFrame {
     private javax.swing.JTable tb_entrenadores;
     private javax.swing.JTable tb_equipos;
     private javax.swing.JTable tb_equiposusuario;
-    private javax.swing.JTextField tf_IDJugador;
     private javax.swing.JTextField tf_MontoApuesta;
     private javax.swing.JTextField tf_NombreArbitro;
     private javax.swing.JTextField tf_NombreEntrenador;
@@ -3472,10 +3424,10 @@ public class main extends javax.swing.JFrame {
         DBCursor cursor = TArbitros.find();
         //System.out.println(newArb.getNombreArbitro());
         while (cursor.hasNext()) {
-            
+
             DocAuxiliar = (BasicDBObject) cursor.next();
-            System.out.println("DocAuxiliar Nombre:"+DocAuxiliar.getString("Nombre"));
-            System.out.println("document: "+document.getString("Nombre"));
+            System.out.println("DocAuxiliar Nombre:" + DocAuxiliar.getString("Nombre"));
+            System.out.println("document: " + document.getString("Nombre"));
             if (DocAuxiliar.getString("Nombre").equals(document.getString("Nombre"))) {
                 System.out.println("entra");
                 newDocument.put("Nombre", newArb.getNombreArbitro());
@@ -3486,6 +3438,62 @@ public class main extends javax.swing.JFrame {
             }
         }
 
+    }
+
+    public void ModificarEntrenadorDBS(Entrenador ent, Entrenador newEnt) {
+        BasicDBObject document = new BasicDBObject();
+        BasicDBObject newDocument = new BasicDBObject();
+        BasicDBObject DocAuxiliar = new BasicDBObject();
+        document.put("Nombre", ent.getNombreEntrenador());
+        document.put("Peso", ent.getPesoEntrenador());
+        DBCursor cursor = TEntrenadores.find();
+
+        while (cursor.hasNext()) {
+
+            DocAuxiliar = (BasicDBObject) cursor.next();
+            System.out.println("DocAuxiliar Nombre:" + DocAuxiliar.getString("Nombre"));
+            System.out.println("document: " + document.getString("Nombre"));
+            if (DocAuxiliar.getString("Nombre").equals(document.getString("Nombre"))) {
+                System.out.println("entra");
+                newDocument.put("Nombre", newEnt.getNombreEntrenador());
+                newDocument.put("Peso", newEnt.getPesoEntrenador());
+
+                TEntrenadores.update(DocAuxiliar, newDocument);
+                System.out.println("se pudo modificar entrenador");
+            }
+        }
+
+    }
+
+    public void ModificarJugadorDBS(Jugador jug, Jugador newjug) {
+        BasicDBObject document = new BasicDBObject();
+        BasicDBObject newDocument = new BasicDBObject();
+        BasicDBObject DocAuxiliar = new BasicDBObject();
+        document.put("Nombre", jug.getNombreJugador());
+        document.put("Edad", jug.getEdad());
+        document.put("FechaNac", jug.getFechaNac());
+        document.put("Peso", jug.getPesoJugador());
+        document.put("Tipo", jug.getTipoJugador());
+        
+        DBCursor cursor = TJugadores.find();
+
+        while (cursor.hasNext()) {
+
+            DocAuxiliar = (BasicDBObject) cursor.next();
+            System.out.println("DocAuxiliar Nombre:" + DocAuxiliar.getString("Nombre"));
+            System.out.println("document: " + document.getString("Nombre"));
+            if (DocAuxiliar.getString("Nombre").equals(document.getString("Nombre"))) {
+                System.out.println("entra");
+                newDocument.put("Nombre", newjug.getNombreJugador());
+                newDocument.put("Edad", newjug.getEdad());
+                newDocument.put("FechaNac", newjug.getFechaNac());
+                newDocument.put("Peso", newjug.getPesoJugador());
+                newDocument.put("Tipo", newjug.getTipoJugador());
+
+                TJugadores.update(DocAuxiliar, newDocument);
+                System.out.println("se pudo modificar jugador");
+            }
+        }
     }
 
 }//Fin de la clase
